@@ -1,0 +1,45 @@
+import time
+import os
+from credentials import get_nova_credentials_v2
+from novaclient.client import Client
+REBOOT_SOFT, REBOOT_HARD = 'SOFT', 'HARD'
+
+def one():
+	try:
+	    print "Please wait..."
+	    credentials = get_nova_credentials_v2()
+	    nova_client = Client(**credentials)
+
+	    image = nova_client.images.find(name="cirros-0.3.1-x86_64-uec")
+	    flavor = nova_client.flavors.find(name="m1.tiny")
+	    net_id = 'beafe19d-8997-430b-9165-da6abd9a1813'
+	    nic_d = [{'net-id': net_id}]
+	    instance = nova_client.servers.create(name="vm2", image=image,
+		                              flavor=flavor, key_name="key_pair", nics=nic_d)
+	    print "Sleeping for 5s after create command"
+	    time.sleep(10)
+	    print "List of VMs"
+	    print nova_client.servers.list()
+	    instance.manager.reboot(instance,reboot_type=REBOOT_SOFT)
+	finally:
+            print "Execution Completed"
+def two():
+	print "Coudnt change Password...!!"
+
+
+
+options = {1:one, 2:two}
+choice = 0
+while(choice != 3):
+	print 'Select an option'
+	print '1. Create an instance and Reboot it'
+	print '2. Change password'
+       	print '3. Exit'
+	choice = int(input('Enter a choice: '))
+	if choice < 1 or choice > 3:
+		print 'Incorrect option. Please enter a valid option.'
+	elif choice == 3:
+		exit()
+	else:
+		options[choice]()
+		print ""
